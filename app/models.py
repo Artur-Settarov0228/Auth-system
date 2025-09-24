@@ -1,44 +1,45 @@
-from sqlalchemy import Column, Integer, String, Boolean, Text, ForeignKey
-from sqlalchemy.orm import relationship
+from sqlalchemy import(
+    Column,
+    Integer,
+    String,
+    Text,
+    Boolean,
+    ForeignKey
+)
 from .database import Base
+from sqlalchemy.orm import relationship
 
 class User(Base):
     __tablename__ = "users"
+
     user_id = Column(Integer, primary_key=True, index=True)
-    first_name = Column(String(70), nullable=False)
-    last_name = Column(String(100), nullable=False)
-    email = Column(String(300), unique=True, index=True, nullable=False)
-    hashed_password = Column(String(300), nullable=False)
-    is_active = Column(Boolean, default=True)
+    first_name = Column(String(64), nullable=False)
+    last_name = Column(String(64))
+    email = Column(String(256), unique=True, nullable=True)
+    hashed_password = Column(String(512), nullable=False)
+    is_active = Column(Boolean, default=False)
     is_verified = Column(Boolean, default=False)
-    verification_code = Column(Integer) 
+    verification_code = Column(Integer)
 
-    tasks = relationship("Task", back_populates="user")
-    
+    tasks = relationship("task", back_populates="user")
 
-@property
-def ful_name(self):
-    if self.firist_name:
-        return f"{self.firist_name} {self.last_name}"
-    else:
-        return self.last_name
-def __repr__(self):
-     return f"{self.user_id}: {self.email}- {self.user.ful_name}"
-    
-
+    @property
+    def full_name(self) -> str:
+        if self.last_name :
+            return f"{self.first_name} {self.last_name}"
+        else:
+            return self.first_name
+        
+    def __repr__(self)->str:
+        return f"{self.user_id}: {self.email} -- {self.full_name}"
+        
 class Task(Base):
     __tablename__ = "tasks"
     task_id = Column(Integer, primary_key=True, index=True)
-    title = Column(String(200), nullable=False)
-    description = Column(Text, nullable=True)
-    user_name = Column(ForeignKey("users.user_id"), onupdate="CASCADE"),
-   
-
+    title = Column(String, nullable=False)
+    description = Column(Text)
+    user_id = Column(Integer, ForeignKey("users.user_id", ondelete="CASCADE") )
     user = relationship("User", back_populates="tasks")
 
-    def __repr__(self):
-        return f"{self.task_id}: {self.title}- {self.user.ful_name}"
-    
-
-
-
+    def __repr__(self)->str:
+        return f"{self.task_id}: {self.title} -- {self.user.fullname}"
